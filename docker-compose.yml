@@ -1,0 +1,35 @@
+version: "3"
+
+services:
+  server:
+    build: ./server
+    ports:
+      - "12345:12345"
+
+  client1:
+    build: ./client
+    environment:
+      - NODE_ID=0
+    ports:
+      - "5000:5000"
+
+  client2:
+    build: ./client
+    environment:
+      - NODE_ID=1
+    ports:
+      - "5001:5001"
+
+  client3:
+    build: ./client
+    environment:
+      - NODE_ID=2
+    ports:
+      - "5002:5002"
+
+  client4:
+    build: ./client
+    environment:
+      - NODE_ID=3
+    ports:
+      - "5003:5003"
