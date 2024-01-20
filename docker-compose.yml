@@ -1,35 +1,38 @@
 version: "3"
 
 services:
-  server:
-    build: ./server
+  coordenador:
+    build: .
     ports:
       - "12345:12345"
+    network_mode: host
+    volumes:
+      - ./resource.txt:/app/resource.txt
 
-  client1:
-    build: ./client
-    environment:
-      - NODE_ID=0
-    ports:
-      - "5000:5000"
+  cliente1:
+    build: .
+    command: python3 -u client.py 1
+    network_mode: host
+    depends_on:
+      - coordenador
 
-  client2:
-    build: ./client
-    environment:
-      - NODE_ID=1
-    ports:
-      - "5001:5001"
+  cliente2:
+    build: .
+    command: python3 -u client.py 2
+    network_mode: host
+    depends_on:
+      - coordenador
 
-  client3:
-    build: ./client
-    environment:
-      - NODE_ID=2
-    ports:
-      - "5002:5002"
+  cliente3:
+    build: .
+    command: python3 -u client.py 3
+    network_mode: host
+    depends_on:
+      - coordenador
 
-  client4:
-    build: ./client
-    environment:
-      - NODE_ID=3
-    ports:
-      - "5003:5003"
+  cliente4:
+    build: .
+    command: python3 -u client.py 4
+    network_mode: host
+    depends_on:
+      - coordenador
