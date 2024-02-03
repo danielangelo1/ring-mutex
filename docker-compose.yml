@@ -1,7 +1,7 @@
 version: "3"
 
 services:
-  coordenador:
+  server:
     build: .
     ports:
       - "12345:12345"
@@ -14,25 +14,25 @@ services:
     command: python3 -u client.py 1
     network_mode: host
     depends_on:
-      - coordenador
+      - server
 
   cliente2:
     build: .
     command: python3 -u client.py 2
     network_mode: host
     depends_on:
-      - coordenador
+      - server
 
   cliente3:
     build: .
     command: python3 -u client.py 3
     network_mode: host
     depends_on:
-      - coordenador
+      - server
 
   cliente4:
     build: .
     command: python3 -u client.py 4
     network_mode: host
     depends_on:
-      - coordenador
+      - server

@@ -1,13 +1,13 @@
 import socket
 import threading
 
-class Coordenador:
+class Server:
     def __init__(self, host='0.0.0.0', port=12345):
         self.lock = threading.Lock()
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind((host, port))
         self.server_socket.listen(5)
-        print(f"Coordenador rodando em {host}:{port}")
+        print(f"Server rodando em {host}:{port}")
 
     def handle_client(self, client_socket):
         client_id = None
@@ -51,6 +51,10 @@ class Coordenador:
             client_thread = threading.Thread(target=self.handle_client, args=(client_socket,))
             client_thread.start()
 
+
+    
+
+
 if __name__ == "__main__":
-    coordenador = Coordenador()
-    coordenador.run()
+    server = Server()
+    server.run()
