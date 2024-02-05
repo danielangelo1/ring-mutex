@@ -12,6 +12,8 @@ services:
   cliente1:
     build: .
     command: python3 -u client.py 1
+    ports:
+      - "12346:12346"
     network_mode: host
     depends_on:
       - server
@@ -19,6 +21,8 @@ services:
   cliente2:
     build: .
     command: python3 -u client.py 2
+    ports:
+      - "12347:12347"
     network_mode: host
     depends_on:
       - server
@@ -27,12 +31,16 @@ services:
     build: .
     command: python3 -u client.py 3
     network_mode: host
+    ports:
+      - "12348:12348"
     depends_on:
       - server
 
   cliente4:
     build: .
     command: python3 -u client.py 4
+    ports:
+      - "12349:12349"
     network_mode: host
     depends_on:
       - server
