@@ -11,7 +11,7 @@ services:
 
   cliente1:
     build: .
-    command: python3 -u client.py 1 12346 12347
+    command: python3 -u start_election.py 1 12346 12347
     network_mode: "host"
     ports:
       - "12346:12346"
@@ -27,6 +27,7 @@ services:
     network_mode: "host"
     depends_on:
       - server
+      - cliente1
 
   cliente3:
     build: .
@@ -36,6 +37,7 @@ services:
       - "12348:12348"
     depends_on:
       - server
+      - cliente2
 
   cliente4:
     build: .
@@ -46,3 +48,4 @@ services:
 
     depends_on:
       - server
+      - cliente3
