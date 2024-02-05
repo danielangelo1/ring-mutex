@@ -16,7 +16,7 @@ class Client:
         self.next_client_port = next_port
 
 
-        threading.Thread(target=self.listen_for_messages, daemon=True).start()
+        threading.Thread(target=self.listen_for_messages).start()
 
     def request_access(self, server_ip='localhost', server_port=12345):
         if self.coordinator != self.client_id:
@@ -99,6 +99,7 @@ class Client:
             return
         self.coordinator = coord_id
         print(f"Cliente {self.client_id} anunciando o novo coordenador {coord_id}.")
+        self.request_access()
         if self.next_client:
             self.next_client.receive_coordinator_announcement(coord_id, self.client_id)
 
@@ -122,6 +123,5 @@ client = Client(client_id, port, next_port)
 print(f"Cliente {client_id}, {port}, {next_port} criado.")
 
 
-if client_id == 1:
-    time.sleep(5)
-    client.start_election()
+time.sleep(5)
+client.start_election()
