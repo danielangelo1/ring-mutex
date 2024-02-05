@@ -42,7 +42,7 @@ class Client:
     def set_next_client(self, next_client):
         self.next_client = next_client
 
-    def simulate_failure(self, failure_rate=0.005):
+    def simulate_failure(self, failure_rate=0.15):
         self.failed = random.random() < failure_rate
         return self.failed
 
@@ -50,6 +50,7 @@ class Client:
         if self.election_in_progress or self.failed:
             return
         self.election_in_progress = True
+        print(f"Cliente {self.client_id} iniciando eleição.")
         self.send_election_message(self.client_id)
 
     def listen_for_messages(self):
@@ -73,16 +74,24 @@ class Client:
                         self.receive_coordinator_announcement(coord_id, int(parts[2]))
 
     def send_election_message(self, election_id):
+    #    if self.simulate_failure():
+    #           print(f"Cliente {self.client_id} falhou ao enviar mensagem de eleição.")
+    #           self.election_in_progress = False
+    #           self.start_election()
+    #           return
+
        message = f"election {election_id}"
        
-       print(f"Cliente {self.client_id} enviando mensagem de eleição com ID {election_id} para o próximo cliente de porta {self.next_client_port}.")
+       print(f"Cliente {self.client_id} enviando mensagem de eleição com ID {election_id} para o próximo cliente.")
        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
             s.connect(('localhost', self.next_client_port))
             s.sendall(message.encode())
         except ConnectionRefusedError:
             print(f"Cliente {self.client_id}: O próximo cliente não está disponível. Iniciando nova eleição.")
+            self.election_in_progress = False
             self.start_election()
+
 
 
         if self.next_client:
@@ -120,8 +129,10 @@ port = int(sys.argv[2])
 next_port = int(sys.argv[3])
     
 client = Client(client_id, port, next_port)
-print(f"Cliente {client_id}, {port}, {next_port} criado.")
+print(f"Cliente {client_id}, {port}, {next_port} iniciado.")
 
 
 time.sleep(5)
-client.start_election()
+
+if client_id == 1:
+    client.start_election()
