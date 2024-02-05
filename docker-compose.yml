@@ -11,7 +11,7 @@ services:
 
   cliente1:
     build: .
-    command: python3 -u start_election.py 1 12346 12347
+    command: python3 -u client.py 1 12346 12347
     network_mode: "host"
     ports:
       - "12346:12346"
