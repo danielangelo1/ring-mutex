@@ -5,32 +5,33 @@ services:
     build: .
     ports:
       - "12345:12345"
-    network_mode: host
+    network_mode: "host"
     volumes:
       - ./resource.txt:/app/resource.txt
 
   cliente1:
     build: .
-    command: python3 -u client.py 1
+    command: python3 -u client.py 1 12346 12347
+    network_mode: "host"
     ports:
       - "12346:12346"
-    network_mode: host
+
     depends_on:
       - server
 
   cliente2:
     build: .
-    command: python3 -u client.py 2
+    command: python3 -u client.py 2 12347 12348
     ports:
       - "12347:12347"
-    network_mode: host
+    network_mode: "host"
     depends_on:
       - server
 
   cliente3:
     build: .
-    command: python3 -u client.py 3
-    network_mode: host
+    command: python3 -u client.py 3 12348 12349
+    network_mode: "host"
     ports:
       - "12348:12348"
     depends_on:
@@ -38,9 +39,10 @@ services:
 
   cliente4:
     build: .
-    command: python3 -u client.py 4
+    command: python3 -u client.py 4 12349 12346
+    network_mode: "host"
     ports:
       - "12349:12349"
-    network_mode: host
+
     depends_on:
       - server

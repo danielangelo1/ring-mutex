@@ -3,14 +3,20 @@ import time
 import sys
 import random
 import os
+import threading
 
 class Client:
-    def __init__(self, client_id):
+    def __init__(self, client_id, port, next_port):
         self.client_id = client_id
         self.next_client = None
         self.failed = False
         self.coordinator = None
         self.election_in_progress = False
+        self.port = port
+        self.next_client_port = next_port
+
+
+        threading.Thread(target=self.listen_for_messages, daemon=True).start()
 
     def request_access(self, server_ip='localhost', server_port=12345):
         if self.coordinator != self.client_id:
@@ -46,13 +52,33 @@ class Client:
         self.election_in_progress = True
         self.send_election_message(self.client_id)
 
+    def listen_for_messages(self):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind(('localhost', self.port))
+            s.listen()
+            
+            while True:
+                conn, addr = s.accept()
+                
+                with conn:
+                    data = conn.recv(1024).decode()
+                    parts = data.split()
+                    if parts[0] == 'election':
+                        election_id = int(parts[1])
+                        print(f"Cliente {self.client_id} recebeu mensagem de eleição com ID {election_id}.")
+                        self.receive_election_message(election_id)
+                    elif parts[0] == 'coordinator':
+                        coord_id = int(parts[1])
+                        print(f"Cliente {self.client_id} recebeu anúncio de novo coordenador {coord_id}.")
+                        self.receive_coordinator_announcement(coord_id, int(parts[2]))
+
     def send_election_message(self, election_id):
        message = f"election {election_id}"
-
+       
+       print(f"Cliente {self.client_id} enviando mensagem de eleição com ID {election_id} para o próximo cliente de porta {self.next_client_port}.")
        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
-            s.connect((self.next_client_add, self.next_client_port))
-            print(f"Cliente {self.client_id} enviando mensagem de eleição com ID {election_id} para o próximo cliente.")
+            s.connect(('localhost', self.next_client_port))
             s.sendall(message.encode())
         except ConnectionRefusedError:
             print(f"Cliente {self.client_id}: O próximo cliente não está disponível. Iniciando nova eleição.")
@@ -63,18 +89,10 @@ class Client:
             self.next_client.receive_election_message(election_id)
 
     def receive_election_message(self, election_id):
-        if self.failed:
-            if self.next_client:
-                self.next_client.receive_election_message(election_id)
-            return
-
         if election_id == self.client_id:
-            print(f"Cliente {self.client_id} é o novo coordenador.")
             self.announce_coordinator(self.client_id)
-            self.election_in_progress = False
-        else:
-            max_id = max(self.client_id, election_id)
-            self.send_election_message(max_id)
+        elif election_id > self.client_id:
+            self.send_election_message(election_id)
 
     def announce_coordinator(self, coord_id):
         if self.failed or self.coordinator == coord_id:
@@ -95,10 +113,15 @@ class Client:
                 print("Anúncio do coordenador completo.")
                 self.request_access()
                 self.election_in_progress = False
+    
+client_id = int(sys.argv[1])
+port = int(sys.argv[2])
+next_port = int(sys.argv[3])
+    
+client = Client(client_id, port, next_port)
+print(f"Cliente {client_id}, {port}, {next_port} criado.")
 
-clientes = [Client(i) for i in range(1, 5)]  
-for i in range(len(clientes)):
-    next_index = (i + 1) % len(clientes)
-    clientes[i].set_next_client(clientes[next_index])
 
-clientes[0].start_election()
+if client_id == 1:
+    time.sleep(5)
+    client.start_election()
