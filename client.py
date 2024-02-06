@@ -123,7 +123,7 @@ class Client:
     #           self.election_in_progress = False
     #           self.start_election()
     #           return
-
+       time.sleep(1)
        message = f"election {election_id}"
        
        print(f"Cliente {self.client_id} enviando mensagem de eleição com ID {election_id} para o próximo cliente.")
@@ -171,16 +171,12 @@ class Client:
         time.sleep(random.randint(1, 10))
         self.request_access()
 
-client_id, port, next_port = map(int, sys.argv[1:4])
-client = Client(client_id, port, next_port)
-print(f"Cliente {client_id}, {port}, {next_port} criado.")
-
-time.sleep(5)
-print(f"{randomNum}")
-
-if client_id == randomNum:
-    print(f"Cliente {client_id}.")
-    client.start_election()
-
-time.sleep(5)
-client.random_access_request()
+if __name__ == "__main__":
+    client_id, port, next_port = map(int, sys.argv[1:4])
+    client = Client(client_id, port, next_port)
+    print(f"Cliente {client_id}, {port}, {next_port} criado.")
+    time.sleep(5)
+    if client_id == 1:
+        client.start_election()
+    time.sleep(15)
+    client.random_access_request()
