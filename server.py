@@ -7,7 +7,7 @@ class Server:
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind((host, port))
         self.server_socket.listen(5)
-        print(f"Server rodando em {host}:{port}")
+        print(f"Server rodando em {host}:{port}\n")
 
     def handle_client(self, client_socket):
         client_id = None
@@ -28,7 +28,7 @@ class Server:
                             client_socket.sendall(b'granted')
                         elif command == 'release':
                             self.lock.release()
-                            print(f"Cliente {client_id} liberou a seção crítica.")
+                            print(f"Cliente {client_id} liberou a seção crítica.\n")
                             client_socket.sendall(b'released')
                         elif command == 'write':
                             self.write_file(parts[1:])
@@ -47,13 +47,8 @@ class Server:
     def run(self):
         while True:
             client_socket, addr = self.server_socket.accept()
-            # print(f"Conexão de {addr}")
             client_thread = threading.Thread(target=self.handle_client, args=(client_socket,))
             client_thread.start()
-
-
-    
-
 
 if __name__ == "__main__":
     server = Server()

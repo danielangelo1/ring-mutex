@@ -25,11 +25,11 @@ Este projeto implementa um sistema distribuído para a gestão de eleições e e
 ## Estrutura do Projeto
 
 - `client.py`: Lógica do cliente, incluindo solicitação de acesso ao recurso e participação na eleição.
-- `server.py`: Servidor que gerencia o acesso ao recurso compartilhado e coordena as eleições.
+- `server.py`: Servidor que gerencia o acesso ao recurso compartilhado.
 - `resource.txt`: Arquivo de recurso compartilhado que os clientes modificam.
 - `Dockerfile` e `docker-compose.yml`: Configurações para containerização e simulação de ambiente distribuído.
 
 ## Autores
 
-- [Daniel Ângelo]
-- [Arthur Feu]
+- [Daniel Ângelo](https://github.com/danielangelo1)
+- [Arthur Feu](https://github.com/ArthurFeu)
