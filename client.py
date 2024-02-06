@@ -5,6 +5,7 @@ import random
 import os
 import threading
 
+randomNum = random.randint(1, 4)
 
 class Client:
     def __init__(self, client_id, port, next_port):
@@ -15,6 +16,8 @@ class Client:
         self.election_in_progress = False
         self.port = port
         self.next_client_port = next_port
+        self.shared_resource_busy = False
+        self.waiting_queue = []
 
         threading.Thread(target=self.listen_for_messages).start()
 
@@ -24,7 +27,7 @@ class Client:
 
             self.send_request_to_coordinator()
         else:
-            self.access_shared_resource()
+            self.manage_access_request(self.client_id)
     
     def send_request_to_coordinator(self):
         try:
@@ -35,13 +38,26 @@ class Client:
                 if response == 'access_granted':
                     self.access_shared_resource()
                 else:
-                    print(f"Cliente {self.client_id}: Acesso negado ou em fila.")
+                    print(f"Cliente {self.client_id}: Acesso negado. Adicionado à fila de espera.")
+                    self.waiting_queue.append(self.client_id)
+
 
         except ConnectionRefusedError:
             print(f"Cliente {self.client_id}: Coordenador não está disponível. Iniciando eleição.")
             self.start_election()
 
+
+    def manage_access_request(self, client_id):
+        if self.shared_resource_busy:
+            self.waiting_queue.append(client_id)
+            print(f"Cliente {self.client_id}: Recurso ocupado, {client_id} adicionado à fila de espera.")
+            if client_id not in self.waiting_queue:
+                self.waiting_queue.append(client_id)
+        else:
+            self.access_shared_resource()        
+
     def access_shared_resource(self):
+        self.shared_resource_busy = True
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.connect(('localhost', 12345))
@@ -55,6 +71,10 @@ class Client:
                     time.sleep(random.randint(1, 5)) 
                     print(f"Cliente {self.client_id}: Saindo da seção crítica.")
                     s.sendall(f'release {self.client_id}'.encode())
+                    self.shared_resource_busy = False
+                else:
+                    print(f"Cliente {self.client_id}: Acesso negado.")
+
         except ConnectionRefusedError:
             print(f"Cliente {self.client_id}: Servidor do recurso compartilhado não disponível.")
 
@@ -92,7 +112,7 @@ class Client:
                         print(f"Cliente {self.client_id} recebeu anúncio de novo coordenador {coord_id}.")
                         self.receive_coordinator_announcement(coord_id, int(parts[2]))
                     elif parts[0] == 'request_access':
-                        if self.failed:
+                        if self.shared_resource_busy:
                             conn.sendall(b'access_denied')
                         else:
                             conn.sendall(b'access_granted')
@@ -115,8 +135,6 @@ class Client:
             print(f"Cliente {self.client_id}: O próximo cliente não está disponível. Iniciando nova eleição.")
             self.election_in_progress = False
             self.start_election()
-
-
 
         if self.next_client:
             self.next_client.receive_election_message(election_id)
@@ -157,13 +175,12 @@ client_id, port, next_port = map(int, sys.argv[1:4])
 client = Client(client_id, port, next_port)
 print(f"Cliente {client_id}, {port}, {next_port} criado.")
 
-randomNum = random.randint(0, 4)
-print(f"{randomNum}")
 time.sleep(5)
+print(f"{randomNum}")
 
 if client_id == randomNum:
     print(f"Cliente {client_id}.")
     client.start_election()
 
-time.sleep(10)
+time.sleep(5)
 client.random_access_request()
